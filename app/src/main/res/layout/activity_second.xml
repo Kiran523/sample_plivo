@@ -56,6 +56,28 @@
             android:layout_gravity="center"
             android:text="Call"
             android:textColor="@color/colorPrimaryDark" />
+
+        <Button
+            android:id="@+id/hangBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Hang Up"
+            android:textColor="@color/colorPrimaryDark" />
+
+        <TextView
+            android:id="@+id/errorTextView"
+            android:layout_width="fill_parent"
+            android:layout_height="30dp"
+            android:layout_marginBottom="0.0dp"
+            android:layout_marginTop="20dp"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:scrollbars="vertical"
+            android:text=""
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="20sp" />
+
     </LinearLayout>
 
 </LinearLayout>

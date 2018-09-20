@@ -1,11 +1,14 @@
 package plivo.com.plivoaccount;
 
 import android.content.Intent;
+import android.net.sip.SipProfile;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import java.text.ParseException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -18,9 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.editText2)
     EditText mPassword;
-
-    String mUsernameStr, mPasswordStr;
-
+    public SipProfile mSipProfile = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,9 +34,17 @@ public class MainActivity extends AppCompatActivity {
         if (mUsername.getText().toString().equals("") || mPassword.getText().toString().equals("")) {
             Toast.makeText(this, "Please Enter Proper Username or Password", Toast.LENGTH_SHORT).show();
         } else {
-            mUsernameStr = mUsername.getText().toString();
-            mPasswordStr = mPassword.getText().toString();
-            if (mUsername.equals(mPasswordStr)){
+            //domain name
+            String dominname="https://developer.android.com/";
+            if (mUsername.getText().toString().trim().equalsIgnoreCase(mPassword.getText().toString().trim())){
+                SipProfile.Builder builder = null;
+                try {
+                    builder = new SipProfile.Builder(mUsername.getText().toString().trim(), dominname);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                builder.setPassword(mPassword.getText().toString().trim());
+                mSipProfile = builder.build();
                 Intent intent = new Intent(this, SecondActivity.class);
                 startActivity(intent);
             }else {
