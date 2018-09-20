@@ -10,18 +10,16 @@ import android.net.sip.SipManager;
 import android.net.sip.SipProfile;
 import android.net.sip.SipRegistrationListener;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class SecondActivity extends AppCompatActivity {
 
@@ -29,8 +27,13 @@ public class SecondActivity extends AppCompatActivity {
     public SipManager mSipManager = null;
     public SipProfile me = null;
     public SipAudioCall call = null;
+    public String sipAddress = null;
+
     @BindView(R.id.errorTextView)
     TextView mErrorText;
+
+    @BindView(R.id.editText1)
+    EditText mEnterNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +47,27 @@ public class SecondActivity extends AppCompatActivity {
             mSipManager = SipManager.newInstance(this);
         }
         initializeLocalProfile();
+
+    }
+
+    @OnClick(R.id.callBtn)
+    public void callBtn(Button button) {
+        sipAddress = mEnterNumber.getText().toString();
+        initiateCall();
+
+    }
+
+    @OnClick(R.id.hangBtn)
+    public void hangBtn(Button button) {
+        if (call != null) {
+            try {
+                call.endCall();
+            } catch (SipException se) {
+                Log.d("SecondActivity",
+                        "Error ending call.", se);
+            }
+            call.close();
+        }
 
     }
 
@@ -84,16 +108,16 @@ public class SecondActivity extends AppCompatActivity {
 
             mSipManager.setRegistrationListener(me.getUriString(), new SipRegistrationListener() {
                 public void onRegistering(String localProfileUri) {
-                    //updateStatus("Registering with SIP Server...");
+                    updateStatus("Registering with SIP Server...");
                 }
 
                 public void onRegistrationDone(String localProfileUri, long expiryTime) {
-                    // updateStatus("Ready");
+                    updateStatus("Ready");
                 }
 
                 public void onRegistrationFailed(String localProfileUri, int errorCode,
                                                  String errorMessage) {
-                    //updateStatus("Registration failed.  Please check settings.");
+                    updateStatus("Registration failed.  Please check settings.");
                 }
             });
         } catch (ParseException pe) {
@@ -102,6 +126,49 @@ public class SecondActivity extends AppCompatActivity {
             updateStatus("Connection error.");
         } catch (java.text.ParseException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Make an outgoing call.
+     */
+    public void initiateCall() {
+
+        updateStatus(sipAddress);
+
+        try {
+            SipAudioCall.Listener listener = new SipAudioCall.Listener() {
+                // Much of the client's interaction with the SIP Stack will
+                // happen via listeners.  Even making an outgoing call, don't
+                // forget to set up a listener to set things up once the call is established.
+                @Override
+                public void onCallEstablished(SipAudioCall call) {
+                    call.startAudio();
+                    call.setSpeakerMode(true);
+                    call.toggleMute();
+                    updateStatus(call);
+                }
+
+                @Override
+                public void onCallEnded(SipAudioCall call) {
+                    updateStatus("Ready.");
+                }
+            };
+            call = mSipManager.makeAudioCall(me.getUriString(), sipAddress, listener, 30);
+        } catch (Exception e) {
+            Log.i("SecondActivity", "Error when trying to close manager.", e);
+            if (me != null) {
+                try {
+                    mSipManager.close(me.getUriString());
+                } catch (Exception ee) {
+                    Log.i("SecondActivity",
+                            "Error when trying to close manager.", ee);
+                    ee.printStackTrace();
+                }
+            }
+            if (call != null) {
+                call.close();
+            }
         }
     }
 
